@@ -7,16 +7,16 @@ import numpy as np
 
 
 __version__ = '1.0.0rc1'
-"""str: colorstrip version"""
+"""str: slitscan version"""
 
 class BreakException(Exception):
 	"""Utility exception used to break out of loops"""
 	pass
 
-def colorstrip(infile, height=400, frame_aggr=5, outfile=None):
+def slitscan(infile, height=400, frame_aggr=5, outfile=None):
 	"""Generates a color strip of a given input video file.
 
-	Usinf OpenCV, this function creates a color movie color from the given input
+	Usinf OpenCV, this function creates a color slit scan from the given input
 	file. By default, the average color of 5 frames is condensed into one stripe
 	in the output image.
 
@@ -53,7 +53,7 @@ def colorstrip(infile, height=400, frame_aggr=5, outfile=None):
 		infile = os.path.abspath(infile)
 
 	if outfile is None:
-		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), 'color-strip.png'))
+		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), 'slitscan.png'))
 	elif not os.path.isabs(outfile):
 		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), outfile))
 
@@ -82,7 +82,7 @@ def colorstrip(infile, height=400, frame_aggr=5, outfile=None):
 	finally:
 		cap.release()
 
-	print('Generating color strip image')
+	print('Generating slit scan image')
 
 	im = np.zeros((height, len(bgr), 3), dtype=np.uint8)
 
@@ -96,12 +96,12 @@ def main(argv=None):
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--outfile', help='Output file name relative to input file, can be specified absolute')
-	parser.add_argument('--height', default=400, type=int, help='Height of the output color strip')
+	parser.add_argument('--height', default=400, type=int, help='Height of the output slit scan image')
 	parser.add_argument('--frame-aggr', default=5, type=int, help='Number of frames to aggregate into one stipe')
 	parser.add_argument('infile', help='Input video file')
 	argv = parser.parse_args(argv)
 
-	colorstrip(argv.infile, argv.height, argv.frame_aggr, argv.outfile)
+	slitscan(argv.infile, argv.height, argv.frame_aggr, argv.outfile)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])

@@ -1,22 +1,22 @@
 from setuptools import setup, find_packages
 
 setup(
-	name='colorstrip',
+	name='slitscan',
 	version='1.0.0rc1',
 
-	url='https://github.com/0xLeon/py-colorstrip',
+	url='https://github.com/0xLeon/slitscan',
 	author='Stefan Hahn',
 	author_email='development@0xleon.com',
 
 	license='MIT',
 
 	py_modules=[
-		'colorstrip',
+		'slitscan',
 	],
 
 	entry_points={
 		'console_scripts': [
-			'colorstrip = colorstrip:main'
+			'slitscan = slitscan:main'
 		],
 	},
 
