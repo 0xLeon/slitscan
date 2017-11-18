@@ -13,10 +13,10 @@ class BreakException(Exception):
 	"""Utility exception used to break out of loops"""
 	pass
 
-def slitscan(infile, height=400, frame_aggr=5, outfile=None):
-	"""Generates a color strip of a given input video file.
+def slitscan(imsequence, height=400, frame_aggr=5):
+	"""Generates a color strip of a given image sequence and returns the result as image object.
 
-	Usinf OpenCV, this function creates a color slit scan from the given input
+	Using OpenCV, this function creates a color slit scan from the given input
 	file. By default, the average color of 5 frames is condensed into one stripe
 	in the output image.
 
@@ -29,10 +29,9 @@ def slitscan(infile, height=400, frame_aggr=5, outfile=None):
 	in doubt, convert your video to uncrompressed AVI or comparable.
 
 	Args:
-		infile (str): Input video file
+		imsequence (cv2.VideoCapture): Input image sequence
 		height (int): Height of the output color strip, must be higher than 0
 		frame_aggr (int): Number of frames to aggregate into one stipe, must be higher than 0
-		outfile (str): Output file name relative to input file, can be specified absolute
 
 	Raises:
 		ValueError: If any of the input parameters is invalid
@@ -43,31 +42,18 @@ def slitscan(infile, height=400, frame_aggr=5, outfile=None):
 	if height < 1:
 		raise ValueError('Invalid output image height of {:d}'.format(height))
 
-
-	cap = cv2.VideoCapture(infile)
 	bgr = []
 
 	print('Reading frames')
 
-	if not os.path.isabs(infile):
-		infile = os.path.abspath(infile)
-
-	if outfile is None:
-		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), 'slitscan.png'))
-	elif not os.path.isabs(outfile):
-		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), outfile))
-
-	if len(outfile) < 4 or outfile[-4:].lower() != '.png':
-		raise ValueError('Invalid output file path {:s}'.format(outfile))
-
 	try:
-		while cap.isOpened():
+		while imsequence.isOpened():
 			bgrLocal = np.array([0, 0, 0], dtype=np.float)
 			c = 0
 
 			for i in range(0, frame_aggr):
 				try:
-					_, frame = cap.read()
+					_, frame = imsequence.read()
 					bgrLocal = bgrLocal + frame.mean(axis=0).mean(axis=0)
 					c = c + 1
 				except (TypeError, AttributeError):
@@ -80,7 +66,7 @@ def slitscan(infile, height=400, frame_aggr=5, outfile=None):
 	except BreakException:
 		pass
 	finally:
-		cap.release()
+		imsequence.release()
 
 	print('Generating slit scan image')
 
@@ -88,6 +74,37 @@ def slitscan(infile, height=400, frame_aggr=5, outfile=None):
 
 	for i in range(0, len(bgr)):
 		im[:, i, :] = bgr[i]
+
+	return im
+
+def slitscanf(infile, height=400, frame_aggr=5, outfile=None):
+	"""Generates a color strip of a given input video file and writes result as PNG image.
+
+	Args:
+		infile (str): Input video file
+		height (int): Height of the output color strip, must be higher than 0
+		frame_aggr (int): Number of frames to aggregate into one stipe, must be higher than 0
+		outfile (str): Output file name relative to input file, can be specified absolute
+
+	Raises:
+		ValueError: If any of the input parameters is invalid
+	"""
+
+	if not os.path.isabs(infile):
+		infile = os.path.abspath(infile)
+
+	if outfile is None:
+		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), 'slitscan.png'))
+	elif not os.path.isabs(outfile):
+		outfile = os.path.abspath(os.path.join(os.path.dirname(infile), outfile))
+
+	if len(outfile) < 4 or outfile[-4:].lower() != '.png':
+		raise ValueError('Invalid output file path {:s}'.format(outfile))
+
+
+	cap = cv2.VideoCapture(infile)
+
+	im = slitscan(cap, height, frame_aggr)
 
 	cv2.imwrite(outfile, im)
 
@@ -101,7 +118,7 @@ def main(argv=None):
 	parser.add_argument('infile', help='Input video file')
 	argv = parser.parse_args(argv)
 
-	slitscan(argv.infile, argv.height, argv.frame_aggr, argv.outfile)
+	slitscanf(argv.infile, argv.height, argv.frame_aggr, argv.outfile)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
